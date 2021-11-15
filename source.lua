@@ -368,7 +368,7 @@ local Commands = {
 						if isAlive(v) then
 							for _,part in pairs(v.Character:GetChildren()) do
 								if part:IsA("BasePart") then
-									boxhandle(part, v.Team.Color)
+									boxhandle(part, Color3.fromRGB(255, 0, 0))
 								end
 							end
 						end
@@ -376,7 +376,7 @@ local Commands = {
 						if isAlive(v) then
 							for _,part in pairs(v.Character:GetChildren()) do
 								if part:IsA("BasePart") then
-									boxhandle(part, v.Team.Color)
+									boxhandle(part, Color3.fromRGB(255, 0, 0))
 								end
 							end
 						end
