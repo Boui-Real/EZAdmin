@@ -32,25 +32,18 @@ end
 
 function boxhandle(part,color)
 
-	local Folder
-
-	if not workspace:FindFirstChild("Chams_EZADMIN") then
-		Folder = Instance.new("Folder",workspace)
-		Folder.Name = "Chams_EZADMIN"
-	else
-		Folder = workspace:FindFirstChild("Chams_EZADMIN")
-	end
-
 	if typeof(part) == "Instance" then
 		if part:IsA("BasePart") then
-			local Adorn = Instance.new("BoxHandleAdornment", Folder)
-			Adorn.Name = part.Name
+			local Adorn = Instance.new("BoxHandleAdornment", part)
+			Adorn.Name = "chams_ez"
 			Adorn.Color3 = color
 			Adorn.Size = part.Size
 			Adorn.Adornee = part
+			Adorn.AlwaysOnTop = true
+			Adorn.ZIndex = 1
 
 			spawn(function()
-				while part ~= nil do
+				while part ~= nil and getgenv().ezAdmin.Chams do
 					wait()
 				end
 				Adorn:Destroy()
@@ -341,15 +334,6 @@ local Commands = {
 	["chams"] = {Name = "chams", Aliases = {"esp"}, Description = "See players through", func = function()
 		getgenv().ezAdmin.Chams = true
 
-		local Folder
-
-		if not workspace:FindFirstChild("Chams_EZADMIN") then
-			Folder = Instance.new("Folder",workspace)
-			Folder.Name = "Chams_EZADMIN"
-		else
-			Folder = workspace:FindFirstChild("Chams_EZADMIN")
-		end
-
 		RunService:BindToRenderStep("Chams",1,function()
 
 			if getgenv().ezAdmin.Chams == false then return RunService:UnbindFromRenderStep("Chams") end
@@ -360,7 +344,9 @@ local Commands = {
 						if isAlive(v) then
 							for _,part in pairs(v.Character:GetChildren()) do
 								if part:IsA("BasePart") then
-									boxhandle(part, v.Team.Color)
+									if not part:FindFirstChild("chams_ez") then
+										boxhandle(part, v.Team.Color)
+									end
 								end
 							end
 						end
@@ -368,7 +354,9 @@ local Commands = {
 						if isAlive(v) then
 							for _,part in pairs(v.Character:GetChildren()) do
 								if part:IsA("BasePart") then
-									boxhandle(part, Color3.fromRGB(255, 0, 0))
+									if not part:FindFirstChild("chams_ez") then
+										boxhandle(part, Color3.fromRGB(255, 0, 0))
+									end
 								end
 							end
 						end
@@ -376,7 +364,9 @@ local Commands = {
 						if isAlive(v) then
 							for _,part in pairs(v.Character:GetChildren()) do
 								if part:IsA("BasePart") then
-									boxhandle(part, Color3.fromRGB(255, 0, 0))
+									if not part:FindFirstChild("chams_ez") then
+										boxhandle(part, Color3.fromRGB(255, 0, 0))
+									end
 								end
 							end
 						end
@@ -388,8 +378,6 @@ local Commands = {
 	end};
 	["nochams"] = {Name = "nochams", Aliases = {"noesp","unesp","unchams"}, Description = "Disable esp", func = function()
 		getgenv().ezAdmin.Chams = false
-
-		workspace:FindFirstChild("Chams_EZADMIN"):ClearAllChildren()
 	end}
 }
 
