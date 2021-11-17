@@ -23,6 +23,11 @@ getgenv().ezAdmin = {
 	Teamcheck = true;
 }
 
+if makefolder ~= nil then
+	makefolder("ezadmin")
+	makefolder("ezadmin/custom_modules")
+end
+
 function isAlive(plr)
 	if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") then
 		return true
@@ -378,8 +383,34 @@ local Commands = {
 	end};
 	["nochams"] = {Name = "nochams", Aliases = {"noesp","unesp","unchams"}, Description = "Disable esp", func = function()
 		getgenv().ezAdmin.Chams = false
+	end};
+	["hydroxide"] = {Name = "hydroxide", Aliases = {"remotespy"}, Description = "Load hydroxide script", func = function()
+		local owner = "Upbolt"
+		local branch = "revision"
+
+		local function webImport(file)
+		    return loadstring(game:HttpGetAsync(("https://raw.githubusercontent.com/%s/Hydroxide/%s/%s.lua"):format(owner, branch, file)), file .. '.lua')()
+		end
+
+		webImport("init")
+		webImport("ui/main")
 	end}
 }
+
+local listfiles = listfiles or listdir or syn_io_listdir
+
+if listfiles ~= nil then
+	for i,v in pairs(listfiles("ezadmin/custom_modules")) do
+		if v:sub(-3) == ".ez" then
+
+			local vTable = loadstring("return " .. readfile(v))()
+
+			vTable.Custom = true
+
+			table.insert(Commands, vTable)
+		end
+	end
+end
 
 function rconsolecustomprint(header, headerColor, text)
 	rconsoleprint('[')
