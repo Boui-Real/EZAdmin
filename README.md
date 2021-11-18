@@ -19,4 +19,4 @@ end}
 ```
 # Discord
 
-[Click me](https://discord.gg/b86vM8QCbf)
+[Click me](https://discord.gg/b86vM8QCbf) to open discord
