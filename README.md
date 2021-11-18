@@ -20,7 +20,3 @@ end}
 # Discord
 
 [Click me](https://discord.gg/b86vM8QCbf)
-
-<p align="center">
-  <img width="1000" height="600" src="https://media1.tenor.com/images/4ff9cef8e5410468ca8a50162738b75f/tenor.gif?itemid=23835298">
-</p>
