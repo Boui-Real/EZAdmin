@@ -28,6 +28,22 @@ if makefolder ~= nil then
 	makefolder("ezadmin/custom_modules")
 end
 
+function getPosition(tbl,value)
+	local amount = 0
+
+	for i,v in pairs(tbl) do
+
+		amount += 1
+
+		if v == value then
+			break
+		end
+
+	end
+
+	return amount
+end
+
 function isAlive(plr)
 	if plr.Character ~= nil and plr.Character:FindFirstChild("Humanoid") then
 		return true
@@ -65,6 +81,22 @@ function getCount(t)
 	end
 
 	return count
+end
+
+function tableToString(tbl,setts)
+
+	local str = "{"
+
+	for i,v in pairs(tbl) do
+		if setts["i"] == false then
+			str = str .. "\"" .. v .. "\";"
+		else
+			str = str .. "[\"" .. tostring(i) .. "\"] = \"" .. v .. "\";"
+		end
+	end
+
+	return str .. "}"
+
 end
 
 local Commands = {
@@ -394,10 +426,65 @@ local Commands = {
 
 		webImport("init")
 		webImport("ui/main")
+	end};
+	["changemessage"] = {Name = "changemessage", Aliases = {"changechatmessage","chatmessage","openmessage"}, Description = "Change admin open message", Arguments = {["message"] = "string"}, func = function(str)
+		if isfile then
+			if isfile("ezadmin/config.ezcfg") then
+				local loads = loadstring("return " .. readfile("ezadmin/config.ezcfg"))()
+				loads["MenuOpenMsg"] = str
+				writefile("ezadmin/config.ezcfg", tableToString(loads,{["i"] = true}))
+			else
+				writefile("ezadmin/config.ezcfg", "{[\"MenuOpenMsg\"] = \"" .. str .. "\"}")
+			end
+		else
+			return rconsoleerr("This command is not suppoted, missing: isfile")
+		end
 	end}
 }
 
 local listfiles = listfiles or listdir or syn_io_listdir
+
+local SpecialCommands = {
+	["cmds"] = {Name = "commands", Aliases = {"cmds"}, func = function()
+		for i,v in pairs(Commands) do
+			local astring = ""
+			if getCount(v.Aliases) > 0 then
+				for i2,v2 in pairs(v.Aliases) do
+					if i2 == getCount(v.Aliases) then
+						astring = astring .. v2
+					else
+						astring = astring .. v2 .. "/ "
+					end
+				end
+			end
+		
+			if astring ~= "" then
+				rconsoleinfo(v.Name .. " / " .. astring .. ": " .. v.Description)
+			else
+				rconsoleinfo(v.Name .. ": " .. v.Description)
+			end
+		end
+	end};
+	["reloadmodules"] = {Name = "reloadmodules", Aliases = {"reloadcustommodules"}, func = function()
+		for _,v in pairs(Commands) do
+			if v.Custom == true then
+				table.remove(Commands, getPosition(Commands,v))
+			end
+		end
+		if listfiles ~= nil then
+			for i,v in pairs(listfiles("ezadmin/custom_modules")) do
+				if v:sub(-3) == ".ez" then
+				
+					local vTable = loadstring("return " .. readfile(v))()
+
+					vTable.Custom = true
+
+					table.insert(Commands, vTable)
+				end
+			end
+		end
+	end}
+}
 
 if listfiles ~= nil then
 	for i,v in pairs(listfiles("ezadmin/custom_modules")) do
@@ -432,6 +519,17 @@ function getCommand(name)
 			end
 		end
 	end
+	for i,v in pairs(SpecialCommands) do
+		if v.Name:lower() == name:lower() then
+			return v
+		else
+			for i2,v2 in pairs(v.Aliases) do
+				if v2:lower() == name:lower() then
+					return v
+				end
+			end
+		end
+	end
 end
 
 local function displayAdmin()
@@ -455,7 +553,7 @@ local function displayAdmin()
 					if getCount(command.Arguments) == 1 then
 						for i,v in pairs(command.Arguments) do
 							if v == "int" then
-								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. ": ")
+								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. "[INT] : ")
 								local int = rconsoleinput()
 
 								repeat
@@ -463,6 +561,24 @@ local function displayAdmin()
 								until int ~= nil
 
 								command.func(tonumber(int))
+							elseif v == "string" then
+								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. "[STRING] : ")
+								local str = rconsoleinput()
+
+								repeat
+									wait()
+								until str ~= nil
+
+								command.func(tostring(str))
+							elseif v == "boolean" then
+								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. "[BOOLEAN] : ")
+								local bool = rconsoleinput()
+
+								repeat
+									wait()
+								until bool ~= nil
+
+								command.func(bool)
 							end
 						end
 					end
@@ -475,31 +591,8 @@ local function displayAdmin()
 				command.func()
 			end
 		else
-			if commandText == "cmds" or commandText == "commands" then
-				for i,v in pairs(Commands) do
-					local astring = ""
-
-					if getCount(v.Aliases) > 0 then
-						for i2,v2 in pairs(v.Aliases) do
-							if i2 == getCount(v.Aliases) then
-								astring = astring .. v2
-							else
-								astring = astring .. v2 .. ", "
-							end
-						end
-					end
-
-					if astring ~= "" then
-						rconsoleinfo(v.Name .. " or " .. astring .. ": " .. v.Description)
-					else
-						rconsoleinfo(v.Name .. ": " .. v.Description)
-					end
-				end
-				askCommand()
-			else
-				rconsoleerr("Command not found")
-				askCommand()
-			end
+			rconsoleerr("Command not found")
+			askCommand()
 		end
 
 	end
@@ -509,7 +602,19 @@ local function displayAdmin()
 end
 
 Player.Chatted:Connect(function(msg)
-	if msg:lower() == "/e admin" then
+
+	local menuOpenMsg = "/e admin"
+
+	if isfile ~= nil then
+		if isfile("ezadmin/config.ezcfg") then
+			local loadstringed = loadstring("return " .. readfile("ezadmin/config.ezcfg"))()
+			menuOpenMsg = loadstringed["MenuOpenMsg"]
+		else
+			writefile("ezadmin/config.ezcfg", [[{["MenuOpenMsg"] = "/e admin"}]])
+		end
+	end
+
+	if msg:lower() == menuOpenMsg then
 		displayAdmin()
 	end
 end)
