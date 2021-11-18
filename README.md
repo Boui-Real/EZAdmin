@@ -20,3 +20,7 @@ end}
 # Discord
 
 [Click me](https://discord.gg/b86vM8QCbf) to open discord
+
+# Loadstring
+
+[Loadstring](https://raw.githubusercontent.com/Boui-Real/EZAdmin/main/loadstring.lua) will be always here
