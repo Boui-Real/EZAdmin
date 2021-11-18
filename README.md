@@ -10,6 +10,8 @@ Custom module template:
 
 ```
 --Arguments is optional argument
+--Arguments template: Arguments = {["name"] = "int"}
+--There are avaible only int/string/boolean
 {Name = "Name", Aliases = {"Name2","Name3"}, Arguments = {"int"}, Description = "Template", func = function()
 
 end}
