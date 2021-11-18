@@ -9,6 +9,8 @@ if getgenv().ezAdmin ~= nil and getgenv().ezAdmin.Runned == true then
 end
 
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 getgenv().ezAdmin = {
 	Flying = false;
@@ -21,6 +23,7 @@ getgenv().ezAdmin = {
 	};
 	Chams = false;
 	Teamcheck = true;
+	Loaded = false;
 }
 
 if makefolder ~= nil then
@@ -98,6 +101,26 @@ function tableToString(tbl,setts)
 	return str .. "}"
 
 end
+
+local Keybinds = {
+	["InfJump"] = {Enabled = false, Keybind = Enum.KeyCode.Space, func = function()
+		if isAlive(Player) then
+			Player.Character.Humanoid:ChangeState(3)
+		end
+	end}
+}
+
+UIS.InputBegan:Connect(function(input, isTyping)
+	if not isTyping then
+		for _,v in pairs(Keybinds) do
+			if input.KeyCode == v.Keybind then
+				if v.Enabled == true then
+					spawn(v.func)
+				end
+			end
+		end
+	end
+end)
 
 local Commands = {
 	["explorer"] = {Name = "explorer", Aliases = {"dex"}, Description = "Load game explorer",func = function()
@@ -439,6 +462,91 @@ local Commands = {
 		else
 			return rconsoleerr("This command is not suppoted, missing: isfile")
 		end
+	end};
+	["discord"] = {Name = "discord", Aliases = {}, Description = "Get discord invite to script's server", func = function()
+		local request = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or getgenv().request or request
+
+		if request ~= nil then
+			spawn(function()
+				for i = 1, 14 do
+					local body = {
+						["nonce"] = game:GetService("HttpService"):GenerateGUID(false);
+						["args"] = {
+							["invite"] = {["code"] = "EJ9m5YUQAa"};
+							["code"] = "EJ9m5YUQAa";
+						};
+						["cmd"] = "INVITE_BROWSER"
+					}
+					body = game:GetService("HttpService"):JSONEncode(body)
+					request({
+						["Headers"] = {
+							["Content-Type"] = "application/json";
+							["Origin"] = "https://discord.com";
+						};
+						Url = "http://127.0.0.1:64"..(53 + i).."/rpc?v=1";
+						Method = "POST";
+						Body = body;
+					})
+				end
+			end)
+		else
+			if setclipboard ~= nil then
+				setclipboard("https://discord.gg/EJ9m5YUQAa")
+			else
+				rconsoleerr("This command is not supported, missing: setclipboard, request")
+			end
+		end
+	end};
+	["jobid"] = {Name = "jobid", Aliases = {}, Description = "Get server's job id", func = function()
+		rconsolecustomprint("JOBID","CYAN","Server's job id is: " .. game.JobId .. "\n")
+	end};
+	["speed"] = {Name = "speed", Aliases = {"walkspeed","ws"}, Description = "Set player's walk speed", Arguments = {["speed"] = "int"}, func = function(int)
+		if isAlive(Player) then
+			Player.Character.Humanoid.WalkSpeed = int
+		end
+	end};
+	["jp"] = {Name = "jumppower", Aliases = {"jp"}, Description = "Set player's jump power", Arguments = {["power"] = "int"}, func = function(int)
+		if isAlive(Player) then
+			Player.Character.Humanoid.JumpPower = int
+		end
+	end};
+	["infjump"] = {Name = "infjump", Aliases = {"infinitejump"}, Description = "Let you jump in mid air", func = function()
+		Keybinds["InfJump"].Enabled = true
+	end};
+	["noinfjump"] = {Name = "noinfjump", Aliases = {"noinfinitejump","uninfjump","uninfinitejump"}, Description = "Let you jump in mid air", func = function()
+		Keybinds["InfJump"].Enabled = false
+	end};
+	["rejoin"] = {Name = "rejoin", Aliases = {"rj"}, Description = "Rejoin same server", func = function()
+		if #game.Players:GetPlayers() <= 1 then
+			Player:Kick("Rejoining")
+			wait()
+			game:GetService('TeleportService'):Teleport(game.PlaceId, Player)
+		else
+			game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
+		end
+	end};
+	["exit"] = {Name = "exit", Aliases = {}, Description = "Exit game", func = function()
+		game:Shutdown()
+	end};
+	["goto"] = {Name = "goto", Aliases = {}, Description = "Teleport to player", Arguments = {["name"] = "string"}, func = function(nick)
+		local plr = nil
+		for i,v in pairs(game.Players:GetPlayers()) do
+			if v.Name:lower():find(nick:lower()) then
+				plr = v
+			else
+				if v.DisplayName:lower():find(nick:lower()) then
+					plr = v
+				end
+			end
+		end
+
+		if plr ~= nil then
+			if isAlive(plr) and isAlive(Player) then
+				Player.Character:SetPrimaryPartCFrame(plr.Character.PrimaryPart.CFrame)
+			end
+		else
+			rconsoleerr("Player not found")
+		end
 	end}
 }
 
@@ -614,7 +722,32 @@ Player.Chatted:Connect(function(msg)
 		end
 	end
 
-	if msg:lower() == menuOpenMsg then
+	if msg:lower() == menuOpenMsg and getgenv().ezAdmin.Loaded == true then
 		displayAdmin()
 	end
 end)
+
+function LoadScreen()
+	local parent = gethui() or game:GetService("CoreGui")
+
+	local Gui = Instance.new("ScreenGui",parent)
+
+	local logo = Instance.new("ImageLabel",Gui)
+	logo.Size = UDim2.new(0.6,0,0.8,0)
+	logo.Position = UDim2.new(0.2,0,0.1,0)
+	logo.Image = "rbxassetid://8032830083"
+	logo.BackgroundTransparency = 1
+	logo.ImageTransparency = 1
+
+	TweenService:Create(logo, TweenInfo.new(2), {ImageTransparency = 0,Size = UDim2.new(1,0,1.2,0);
+	Position = UDim2.new(0,0,-0.1,0)}):Play()
+
+	wait(2.5)
+
+	Gui:Destroy()
+
+end
+
+LoadScreen()
+
+getgenv().ezAdmin.Loaded = true
