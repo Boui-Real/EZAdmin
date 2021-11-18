@@ -3,6 +3,7 @@
 A roblox exploit admin which is based on roblox console, to open say in chat:
 
 # /e admin
+Say this in the chat to open admin
 
 # How to add your custom modules?
 
