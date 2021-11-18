@@ -17,6 +17,6 @@ Custom module template:
 
 end}
 ```
-#Discord
+# Discord
 
 [Click me](https://discord.gg/b86vM8QCbf)
