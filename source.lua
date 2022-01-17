@@ -12,6 +12,11 @@ local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
+local CFrameConnection = nil
+local NearGotoConnection
+
+local FakelagManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Boui-Real/EZAdmin/main/scripts/fakelag.lua"))()
+
 getgenv().ezAdmin = {
 	Flying = false;
 	Noclip = false;
@@ -122,6 +127,55 @@ UIS.InputBegan:Connect(function(input, isTyping)
 	end
 end)
 
+function Fly()
+    local bg = Instance.new("BodyGyro", torso)
+    bg.P = 9e4
+    bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.cframe = torso.CFrame
+    local bv = Instance.new("BodyVelocity", torso)
+    bv.velocity = Vector3.new(0, 0.1, 0)
+    bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+    repeat
+        wait()
+        Player.Character.Humanoid.PlatformStand = true
+        if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+            speed = speed + .5
+        elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+            speed = speed - 1
+            if speed < 0 then
+                speed = 0
+            end
+        end
+        if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+            bv.velocity =
+                ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f + ctrl.b)) +
+                ((game.Workspace.CurrentCamera.CoordinateFrame *
+                    CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * .2, 0).p) -
+                    game.Workspace.CurrentCamera.CoordinateFrame.p)) *
+                speed
+            lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+        elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+            bv.velocity =
+                ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f + lastctrl.b)) +
+                ((game.Workspace.CurrentCamera.CoordinateFrame *
+                    CFrame.new(lastctrl.l + lastctrl.r, (lastctrl.f + lastctrl.b) * .2, 0).p) -
+                    game.Workspace.CurrentCamera.CoordinateFrame.p)) *
+                speed
+        else
+            bv.velocity = Vector3.new(0, 0.1, 0)
+        end
+        bg.cframe =
+            game.Workspace.CurrentCamera.CoordinateFrame *
+            CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50), 0, 0)
+    until not getgenv().ezAdmin.Flying
+    ctrl = {f = 0, b = 0, l = 0, r = 0}
+    lastctrl = {f = 0, b = 0, l = 0, r = 0}
+    speed = 0
+    bg:Destroy()
+    bv:Destroy()
+    Player.Character.Humanoid.PlatformStand = false
+end
+
 local Commands = {
 	["explorer"] = {Name = "explorer", Aliases = {"dex"}, Description = "Load game explorer",func = function()
 		local Dex = game:GetObjects("rbxassetid://3567096419")[1]
@@ -184,54 +238,6 @@ local Commands = {
 		local ctrl = {f = 0, b = 0, l = 0, r = 0}
 		local lastctrl = {f = 0, b = 0, l = 0, r = 0}
 
-		function Fly()
-		    local bg = Instance.new("BodyGyro", torso)
-		    bg.P = 9e4
-		    bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-		    bg.cframe = torso.CFrame
-		    local bv = Instance.new("BodyVelocity", torso)
-		    bv.velocity = Vector3.new(0, 0.1, 0)
-		    bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-		    repeat
-		        wait()
-		        Player.Character.Humanoid.PlatformStand = true
-		        if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-		            speed = speed + .5
-		        elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-		            speed = speed - 1
-		            if speed < 0 then
-		                speed = 0
-		            end
-		        end
-		        if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-		            bv.velocity =
-		                ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f + ctrl.b)) +
-		                ((game.Workspace.CurrentCamera.CoordinateFrame *
-		                    CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * .2, 0).p) -
-		                    game.Workspace.CurrentCamera.CoordinateFrame.p)) *
-		                speed
-		            lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-		        elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-		            bv.velocity =
-		                ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f + lastctrl.b)) +
-		                ((game.Workspace.CurrentCamera.CoordinateFrame *
-		                    CFrame.new(lastctrl.l + lastctrl.r, (lastctrl.f + lastctrl.b) * .2, 0).p) -
-		                    game.Workspace.CurrentCamera.CoordinateFrame.p)) *
-		                speed
-		        else
-		            bv.velocity = Vector3.new(0, 0.1, 0)
-		        end
-		        bg.cframe =
-		            game.Workspace.CurrentCamera.CoordinateFrame *
-		            CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50), 0, 0)
-		    until not getgenv().ezAdmin.Flying
-		    ctrl = {f = 0, b = 0, l = 0, r = 0}
-		    lastctrl = {f = 0, b = 0, l = 0, r = 0}
-		    speed = 0
-		    bg:Destroy()
-		    bv:Destroy()
-		    Player.Character.Humanoid.PlatformStand = false
-		end
 		mouse.KeyDown:connect(
 		    function(key)
 		        if key:lower() == "w" then
@@ -405,7 +411,7 @@ local Commands = {
 							for _,part in pairs(v.Character:GetChildren()) do
 								if part:IsA("BasePart") then
 									if not part:FindFirstChild("chams_ez") then
-										boxhandle(part, v.Team.Color)
+										boxhandle(part, v.TeamColor.Color)
 									end
 								end
 							end
@@ -547,6 +553,187 @@ local Commands = {
 		else
 			rconsoleerr("Player not found")
 		end
+	end};
+	["spin"] = {Name = "spin", Aliases = {}, Description = "Automatically spin", Arguments = {["speed"] = "int"}, func = function(speed)
+		if isAlive(Player) then
+
+			for i,v in pairs(Player.Character.PrimaryPart:GetChildren()) do
+				if v:IsA("BodyAngularVelocity") and v.Name == "ezSpin" then
+					v:Destroy()
+				end
+			end
+
+			local spin = Instance.new("BodyAngularVelocity", Player.Character.PrimaryPart)
+			spin.Name = "ezSpin"
+			spin.MaxTorque = Vector3.new(0, math.huge, 0)
+			spin.AngularVelocity = Vector3.new(0, speed, 0)
+
+		end
+	end};
+	["unspin"] = {Name = "unspin", Aliases = {"nospin"}, Description = "Stop spinning", func = function()
+		if isAlive(Player) then
+			for i,v in pairs(Player.Character.PrimaryPart:GetChildren()) do
+				if v:IsA("BodyAngularVelocity") and v.Name == "ezSpin" then
+					v:Destroy()
+				end
+			end
+		end
+	end};
+	["antikick"] = {Name = "antikick", Aliases = {"clientantikick"}, Description = "Dont get kicked from client", func = function()
+		local closure = newcclosure or protect_function
+
+		if closure == nil then
+			rconsoleerr("No newcclosure and protect_function function found, using other method")
+			closure = function(f)
+				return f
+			end
+
+			local mt = getrawmetatable(game)
+			local old = mt.__namecall
+
+			hookfunction(mt.__namecall, closure(function(self, ...)
+				local method = getnamecallmethod()
+
+				if method == "Kick" then
+					return wait(99e99)
+				end
+
+				return old(self, ...)
+			end))
+		end
+	end};
+	["fakelag"] = {Name = "fakelag", Aliases = {}, Arguments = {["ticks"] = "int"}, Description = "Be with fake lags", func = function(ticks)
+		FakelagManager.Ticks = ticks
+		spawn(FakelagManager.Enable)
+	end};
+	["unfakelag"] = {Name = "unfakelag", Aliases = {"nofakelag"}, Description = "Disable fake lag", func = function()
+		FakelagManager.Disable()
+	end};
+	{Name = "cframewalk", Aliases = {"cfwalk"}, Description = "Cframe speed", Arguments = {["speed"] = "int"}, func = function(int)
+		if CFrameConnection ~= nil then
+			CFrameConnection:Disconnect()
+		end
+
+		local Vec3 = Vector3.new
+		local CFAngles = CFrame.Angles
+
+		local Root = Player.Character.HumanoidRootPart
+		local CamCFrame = workspace.CurrentCamera.CFrame
+		local RAD = math.rad
+		local CF = CFrame.new
+
+		local function YROTATION(cframe) 
+			local x, y, z = cframe:ToOrientation() 
+			return CF(cframe.Position) * CFAngles(0,y,0) 
+		end
+
+		CFrameConnection = RunService.RenderStepped:Connect(function()
+			if isAlive(Player) then
+
+				local rad = 0
+				local textbox = UIS:GetFocusedTextBox()
+
+				if textbox == nil then
+					if UIS:IsKeyDown("A") then rad = 90 end
+					if UIS:IsKeyDown("S") then rad = 180 end
+					if UIS:IsKeyDown("D") then rad = 270 end
+					if UIS:IsKeyDown("A") and UIS:IsKeyDown("W") then rad = 45 end
+					if UIS:IsKeyDown("D") and UIS:IsKeyDown("W") then rad = 315 end
+					if UIS:IsKeyDown("D") and UIS:IsKeyDown("S") then rad = 225 end
+					if UIS:IsKeyDown("A") and UIS:IsKeyDown("S") then rad = 145 end
+
+					local WDown = UIS:IsKeyDown("W")
+
+					local rot = YROTATION(Root.CFrame) * CFAngles(0,RAD(rad),0)
+
+					if rad == 0 and WDown == true then
+						Root.CFrame = Root.CFrame + Vec3(rot.LookVector.X,0,rot.LookVector.Z) * int
+					elseif rad > 0 then
+						Root.CFrame = Root.CFrame + Vec3(rot.LookVector.X,0,rot.LookVector.Z) * int
+					end
+				end
+			end
+		end)
+	end};
+	{Name = "uncframewalk", Aliases = {"nocframewalk","uncfwalk","nocfwalk"}, Description = "Stop using cframe walk", func = function()
+		if CFrameConnection ~= nil then
+			CFrameConnection:Disconnect()
+		end
+	end};
+	{Name = "invisiblefling", Aliases = {"invisfling"}, Description = "Invisible fling people", func = function()
+		if not isAlive(Player) then return end
+
+		local ch = speaker.Character
+		local prt=Instance.new("Model")
+		prt.Parent = speaker.Character
+		local z1 = Instance.new("Part")
+		z1.Name="Torso"
+		z1.CanCollide = false
+		z1.Anchored = true
+		local z2 = Instance.new("Part")
+		z2.Name="Head"
+		z2.Parent = prt
+		z2.Anchored = true
+		z2.CanCollide = false
+		local z3 =Instance.new("Humanoid")
+		z3.Name="Humanoid"
+		z3.Parent = prt
+		z1.Position = Vector3.new(0,9999,0)
+		speaker.Character=prt
+		wait(3)
+		speaker.Character=ch
+		wait(3)
+		local Hum = Instance.new("Humanoid")
+		z2:Clone()
+		Hum.Parent = speaker.Character
+		local root =  Player.Character.HumanoidRootPart
+		for i,v in pairs(speaker.Character:GetChildren()) do
+			if v ~= root and  v.Name ~= "Humanoid" then
+				v:Destroy()
+			end
+		end
+		root.Transparency = 0
+		root.Color = Color3.new(1, 1, 1)
+		local invisflingStepped
+		invisflingStepped = RunService.Stepped:Connect(function()
+			if speaker.Character and Player.Character.HumanoidRootPart then
+				Player.Character.HumanoidRootPart.CanCollide = false
+			else
+				invisflingStepped:Disconnect()
+			end
+		end)
+		Fly()
+		workspace.CurrentCamera.CameraSubject = root
+		local bambam = Instance.new("BodyThrust")
+		bambam.Parent = Player.Character.HumanoidRootPart
+		bambam.Force = Vector3.new(99999,99999*10,99999)
+		bambam.Location = Player.Character.HumanoidRootPart.Position
+	end};
+	{Name = "nearestgoto", Aliases = {"neargoto"}, Description = "Teleport to nearest player", Arguments = {["toggle"] = "boolean"}, func = function(val)
+		if val == true then
+			if NearGotoConnection == nil then
+				NearGotoConnection = RunService.RenderStepped:Connect(function()
+					local nearest = nil
+					local max = math.huge
+					for _, plr in pairs(game.Players:GetPlayers()) do
+						if plr ~= Player and isAlive(plr) and isAlive(Player) then
+							local dist = (plr.Character.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).magnitude
+							if dist < max then
+								nearest = plr
+								max = dist
+							end
+						end
+					end
+					if nearest ~= nil then
+						Player.Character.HumanoidRootPart.CFrame = nearest.Character.HumanoidRootPart.CFrame
+					end
+				end)
+			end
+		else
+			if NearGotoConnection ~= nil then
+				NearGotoConnection:Disconnect()
+			end
+		end
 	end}
 }
 
@@ -561,7 +748,7 @@ local SpecialCommands = {
 					if i2 == getCount(v.Aliases) then
 						astring = astring .. v2
 					else
-						astring = astring .. v2 .. "/ "
+						astring = astring .. v2 .. " / "
 					end
 				end
 			end
@@ -591,7 +778,7 @@ local SpecialCommands = {
 				end
 			end
 		end
-	end}
+	end};
 }
 
 if listfiles ~= nil then
@@ -661,7 +848,7 @@ local function displayAdmin()
 					if getCount(command.Arguments) == 1 then
 						for i,v in pairs(command.Arguments) do
 							if v == "int" then
-								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. "[INT] : ")
+								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. " [INT] : ")
 								local int = rconsoleinput()
 
 								repeat
@@ -670,7 +857,7 @@ local function displayAdmin()
 
 								command.func(tonumber(int))
 							elseif v == "string" then
-								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. "[STRING] : ")
+								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. " [STRING] : ")
 								local str = rconsoleinput()
 
 								repeat
@@ -679,7 +866,7 @@ local function displayAdmin()
 
 								command.func(tostring(str))
 							elseif v == "boolean" then
-								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. "[BOOLEAN] : ")
+								rconsolecustomprint("EZADMIN","GREEN","Please, enter " .. i:lower() .. " [BOOLEAN] : ")
 								local bool = rconsoleinput()
 
 								repeat
