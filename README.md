@@ -9,7 +9,7 @@ That's default chat message to open admin
 
 Custom module template:
 
-```
+```lua
 --Arguments is optional argument
 --Arguments template: Arguments = {["name"] = "int"}
 --There are avaible only int/string/boolean
